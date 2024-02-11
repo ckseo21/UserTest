@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/head :: head_fragment(title = 'ユーザ情報一覧', scripts = ~{::script}, links = ~{::link})"></head>
+<body>
+  <div class="container">
+        <h1>ユーザ情報一覧</h1>
+        <div class="float-end">
+            <a th:href="@{/board/user}" class="btn btn-primary">ユーザ登録</a>
+            <a th:href="@{/board/list}" class="btn btn-primary">掲示板一覧画面</a>
+        </div>
+        <div th:if="${userlist}">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ユーザID</th>
+                        <th>お名前</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${userlist}" th:object="${user}" class="align-middle">
+                        <td th:text="*{user}"></td>
+                        <td th:text="*{name}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
