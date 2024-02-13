@@ -219,11 +219,14 @@ public class BoardController {
       return "board/user";
     }
     // 掲示板情報の登録
-    userService.user_create(userInfoRequest);
-    if(userInfoRequest.getUser() == null) {
-    	model.addAttribute("validationError", "登録作業が失敗しました。");
-    }
-    return "redirect:/board";
+    //userService.user_create(userInfoRequest);
+    User user = userService.user_create(userInfoRequest);
+    if(user == null) {
+    	model.addAttribute("validationError", "ユーザIDは既に存在します。");
+    	return "board/user";
+    } 
+   	return "redirect:/board/userlist";
+
   }
   
   /**

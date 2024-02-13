@@ -26,14 +26,23 @@ public class UserService {
    * 掲示板情報 新規登録
    * @param userInfoRequest 掲示板情報
    */
-  public void user_create(UserInfoRequest userInfoRequest) {
+  public User user_create(UserInfoRequest userInfoRequest) {
     Date now = new Date();
     User user = new User();
-    user.setUser(userInfoRequest.getUser());
+    String userid = userInfoRequest.getUser();
+    user.setUser(userid);
     user.setPassword(userInfoRequest.getPassword());
     user.setName(userInfoRequest.getName());
     user.setCreateDate(now);
-    userRepository.save(user);
+    boolean isuser = userRepository.existsById(userid);
+    if(isuser == false) {
+    	userRepository.save(user);
+    }
+    else {
+    	user = null;
+    }
+    //userRepository.save(user);
+    return user;
   }
   
   /**
