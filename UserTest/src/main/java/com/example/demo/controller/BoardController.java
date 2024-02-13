@@ -16,11 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.example.demo.dto.BoardRequest;
+import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.UserInfoRequest;
 import com.example.demo.dto.UserRequest;
 import com.example.demo.entity.Board;
 import com.example.demo.entity.User;
 import com.example.demo.service.BoardService;
+import com.example.demo.service.LoginService;
 import com.example.demo.service.UserService;
 
 /**
@@ -35,6 +37,8 @@ public class BoardController {
   private BoardService boardService;
   @Autowired
   private UserService userService;
+  @Autowired
+  private LoginService loginService;
   /**
    * 掲示板情報一覧画面を表示
    * @param model モデル
@@ -116,7 +120,13 @@ public class BoardController {
     if(boardRequest.getAuthor() == null) {
     	model.addAttribute("validationError", "登録作業が失敗しました。");
     }
-    return "redirect:/board";
+    else {
+    	String author = boardRequest.getAuthor();
+		List<Board> userList = boardService.findByAuthor(author);
+		model.addAttribute("userlist", userList);
+    }
+    //return "redirect:/board";
+    return "board/search";
   }
   
   /**
@@ -227,5 +237,59 @@ public class BoardController {
     model.addAttribute("userlist", userList);
     return "board/userlist";
   }
+  
+  //Added by SEO(2024/02/12)
+	/**
+	 * 初期画面
+	 * 
+	 * @param model モデル
+	 * @return 初期画面
+	 */	
+	@GetMapping("/login")
+	public String userInfo(Model model, LoginRequest loginRequest) {
+		
+		return "board/login";
+		
+	}
+	
+	/**
+	 * ログイン
+	 * 
+	 * @param model モデル
+	 * @param bdResult エラーチェック結果
+	 * @param form ログイン画面
+	 * @return 結果画面
+	 */
+	@RequestMapping(value = "/login/search", method = RequestMethod.POST)
+	  public String user_search(@Validated @ModelAttribute LoginRequest loginRequest, BindingResult result, Model model) {
+	    if (result.hasErrors()) {
+	      // 入力チェックエラーの場合
+	      List<String> errorList = new ArrayList<String>();
+	      for (ObjectError error : result.getAllErrors()) {
+	        errorList.add(error.getDefaultMessage());
+	      }
+	      model.addAttribute("validationError", errorList);
+	      return "board/login";
+	    }
+		var user = loginService.user_search(loginRequest.getUser());
+		var isCorrectUserAuth = user.isPresent()
+				&& loginRequest.getPassword().equals(user.get().getPassword());
+		if (isCorrectUserAuth) {
+			  String author = loginRequest.getUser();
+			  List<Board> userList = boardService.findByAuthor(author);
+			  if (userList.isEmpty()) {
+				  model.addAttribute("userlist", null);
+				  model.addAttribute("validationError", "該当の作成者は存在しません。");
+			  } else {
+				  model.addAttribute("userlist", userList);
+			  }
+		      return "board/search";
+			//model.addAttribute("info", loginRequest);
+			//return "board/result";
+		} else {
+			model.addAttribute("validationError", "IDまたはパスワードが間違っています。");
+			return "board/login";
+		}
+	}
    
 }
